@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ReconGuard | External Reconnaissance Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body class="bg-dark text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="/">ReconGuard</a>
+        <span class="navbar-text text-muted">Authorized external reconnaissance MVP</span>
+      </div>
+    </nav>
+
+    <main class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card shadow-lg border-0 bg-secondary-subtle text-dark">
+            <div class="card-body p-4">
+              <h1 class="display-6 fw-bold">External Reconnaissance Scanner</h1>
+              <p class="text-muted">Authorized testing only. This MVP validates a target, resolves its DNS, discovers common subdomains, and checks a small set of common ports.</p>
+
+              <form id="scan-form" class="mt-4">
+                <div class="mb-3">
+                  <label for="target" class="form-label fw-semibold">Target domain</label>
+                  <input id="target" name="target" class="form-control form-control-lg" placeholder="example.com" required>
+                </div>
+
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="authorized">
+                  <label class="form-check-label" for="authorized">I confirm I am authorized to scan this target.</label>
+                </div>
+
+                <button id="scan-button" class="btn btn-success btn-lg" type="submit" disabled>
+                  Start Scan
+                </button>
+              </form>
+
+              <div id="loading-state" class="mt-4 d-none">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="spinner-border text-success" role="status"></div>
+                  <div>
+                    <h5 class="mb-0">Scanning <span id="loading-target">...</span>...</h5>
+                    <p class="text-muted mb-0">Resolving DNS and checking common ports.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="error-state" class="alert alert-danger mt-4 d-none"></div>
+            </div>
+          </div>
+
+          <div id="results-panel" class="mt-4 d-none">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="card border-0 bg-dark-subtle text-light">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted">Target</h6>
+                    <p id="result-target" class="fw-bold fs-5 mb-0"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-dark-subtle text-light">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted">Resolved IP</h6>
+                    <p id="result-ip" class="fw-bold fs-5 mb-0"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-dark-subtle text-light">
+                  <div class="card-body">
+                    <h6 class="text-uppercase text-muted">Status</h6>
+                    <p id="result-status" class="fw-bold fs-5 mb-0"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+              <div class="col-md-6">
+                <div class="card border-0 bg-dark-subtle text-light">
+                  <div class="card-body">
+                    <h5 class="card-title">Subdomains Found</h5>
+                    <ul id="subdomain-list" class="list-group list-group-flush"></ul>
+                    <p id="subdomain-count" class="text-muted mt-2 mb-0"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-dark-subtle text-light">
+                  <div class="card-body">
+                    <h5 class="card-title">Open Ports</h5>
+                    <table class="table table-dark table-sm align-middle">
+                      <thead>
+                        <tr>
+                          <th>Port</th>
+                          <th>Service</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="port-table-body"></tbody>
+                    </table>
+                    <p id="port-count" class="text-muted mt-2 mb-0"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
