@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ReconGuard{% endblock %}</title>
+  <meta name="description" content="ReconGuard maps a domain's external attack surface — subdomains, open ports, tech stack, and exposed panels — into a risk-ranked report.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/vis-network/styles/vis-network.min.css">
+</head>
+<body>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('home') }}">
+      <span class="brand-mark">RG</span>
+      <span class="brand-name">ReconGuard</span>
+    </a>
+    <div class="header-actions">
+      <span class="brand-tag">External recon, kept in scope</span>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark theme" aria-pressed="false">
+        <span class="theme-toggle-icon" aria-hidden="true">☀︎</span>
+        <span class="theme-toggle-label">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <span>ReconGuard v{{ config.VERSION }} — for targets you own or are explicitly authorized to test.</span>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

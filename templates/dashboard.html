@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}ReconGuard — {{ report.target }}{% endblock %}
+
+{% block content %}
+<section class="report-head">
+  <div>
+    <p class="eyebrow">Stage 06 · Risk Report</p>
+    <h1>{{ report.target }}</h1>
+    <p class="report-meta">Generated {{ report.generated_at }}</p>
+  </div>
+
+  <div class="gauge-wrap">
+    <svg class="gauge" viewBox="0 0 160 160" role="img" aria-label="Risk score {{ report.risk.score }} out of 100">
+      <circle class="gauge-track" cx="80" cy="80" r="70"></circle>
+      <circle class="gauge-fill" cx="80" cy="80" r="70" data-score="{{ report.risk.score }}"></circle>
+      <text x="80" y="76" class="gauge-score">{{ report.risk.score }}</text>
+      <text x="80" y="98" class="gauge-max">/ 100</text>
+    </svg>
+    <p class="gauge-rating rating-{{ report.risk.rating|lower }}">{{ report.risk.rating }} risk</p>
+  </div>
+</section>
+
+<section class="summary-strip">
+  <div class="summary-card">
+    <p class="summary-number">{{ report.summary.subdomains_found }}</p>
+    <p class="summary-label">Subdomains</p>
+  </div>
+  <div class="summary-card">
+    <p class="summary-number">{{ report.summary.open_ports_found }}</p>
+    <p class="summary-label">Open ports</p>
+  </div>
+  <div class="summary-card">
+    <p class="summary-number">{{ report.summary.technologies_detected }}</p>
+    <p class="summary-label">Technologies</p>
+  </div>
+  <div class="summary-card">
+    <p class="summary-number">{{ report.summary.exposed_panels_found }}</p>
+    <p class="summary-label">Exposed panels</p>
+  </div>
+</section>
+
+<section class="panel-grid">
+
+  <article class="panel panel-wide">
+    <h2>Findings</h2>
+    {% if report.risk.findings %}
+    <ul class="findings-list">
+      {% for f in report.risk.findings %}
+      <li class="finding severity-{{ f.severity }}">
+        <span class="severity-tag">{{ f.severity }}</span>
+        <div>
+          <p class="finding-title">{{ f.title }}</p>
+          <p class="finding-detail">{{ f.detail }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-state">Nothing tripped these checks. That's not the same as "nothing's wrong" — it means these particular signals came back clean.</p>
+    {% endif %}
+  </article>
+
+  <article class="panel">
+    <h2>Subdomains <span class="count">{{ report.subdomains|length }}</span></h2>
+    {% if report.subdomains %}
+    <table class="data-table">
+      <thead><tr><th>Host</th><th>IP</th><th>Source</th></tr></thead>
+      <tbody>
+        {% for s in report.subdomains %}
+        <tr>
+          <td class="mono-cell">{{ s.host }}</td>
+          <td class="mono-cell">{{ s.ips|join(', ') if s.ips else '—' }}</td>
+          <td>{{ s.source }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No subdomains turned up from CT logs or the brute-force list.</p>
+    {% endif %}
+  </article>
+
+  <article class="panel">
+    <h2>Open ports <span class="count">{{ report.open_ports|length }}</span></h2>
+    {% if report.open_ports %}
+    <table class="data-table">
+      <thead><tr><th>Port</th><th>Service</th><th>Banner</th></tr></thead>
+      <tbody>
+        {% for p in report.open_ports %}
+        <tr class="{{ 'row-sensitive' if p.sensitive else '' }}">
+          <td class="mono-cell">{{ p.port }}</td>
+          <td>{{ p.service }}</td>
+          <td class="mono-cell">{{ p.banner or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No open ports found among the ones ReconGuard checks.</p>
+    {% endif %}
+  </article>
+
+  <article class="panel">
+    <h2>Technology stack</h2>
+    {% if report.tech_stack.detected %}
+    <div class="tech-groups">
+      {% for category, items in report.tech_stack.detected.items() %}
+      <div class="tech-group">
+        <p class="tech-category">{{ category }}</p>
+        <div class="tag-row">
+          {% for item in items %}<span class="tag">{{ item }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No fingerprints matched. The site may be unreachable, or running a stack outside the signature set.</p>
+    {% endif %}
+
+    {% if report.tech_stack.server_header or report.tech_stack.powered_by %}
+    <div class="header-meta">
+      {% if report.tech_stack.server_header %}<p><span>Server</span>{{ report.tech_stack.server_header }}</p>{% endif %}
+      {% if report.tech_stack.powered_by %}<p><span>X-Powered-By</span>{{ report.tech_stack.powered_by }}</p>{% endif %}
+    </div>
+    {% endif %}
+
+    <p class="tech-category">Security headers</p>
+    <div class="tag-row">
+      {% for header, present in report.tech_stack.security_headers.items() %}
+      <span class="tag {{ 'tag-good' if present else 'tag-missing' }}">{{ header }}</span>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel">
+    <h2>Exposed panels <span class="count">{{ report.exposed_panels|length }}</span></h2>
+    {% if report.exposed_panels %}
+    <table class="data-table">
+      <thead><tr><th>Path</th><th>What it is</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in report.exposed_panels %}
+        <tr>
+          <td class="mono-cell">{{ p.path }}</td>
+          <td>{{ p.label }}</td>
+          <td class="mono-cell">{{ p.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">None of the checked paths returned anything interesting.</p>
+    {% endif %}
+  </article>
+
+  {% if report.domain_info and report.domain_info.available %}
+  <article class="panel">
+    <h2>Domain registration</h2>
+    <dl class="kv-list">
+      {% if report.domain_info.registrar %}<div><dt>Registrar</dt><dd>{{ report.domain_info.registrar }}</dd></div>{% endif %}
+      {% if report.domain_info.creation_date %}<div><dt>Registered</dt><dd>{{ report.domain_info.creation_date }}</dd></div>{% endif %}
+      {% if report.domain_info.expiration_date %}<div><dt>Expires</dt><dd>{{ report.domain_info.expiration_date }}</dd></div>{% endif %}
+      {% if report.domain_info.country %}<div><dt>Country</dt><dd>{{ report.domain_info.country }}</dd></div>{% endif %}
+    </dl>
+  </article>
+  {% endif %}
+
+</section>
+
+<section class="raw-export">
+  <details>
+    <summary>Raw JSON report</summary>
+    <pre class="raw-json">{{ report_json }}</pre>
+  </details>
+  <div class="export-actions">
+    <form method="post" action="{{ url_for('download_json') }}">
+      <input type="hidden" name="domain" value="{{ report.target }}">
+      <input type="hidden" name="report_data" value='{{ report_json }}'>
+      <button type="submit" class="download-btn">Download JSON report</button>
+    </form>
+    <a class="rerun-link" href="{{ url_for('home') }}">Run another scan</a>
+  </div>
+</section>
+
+<!-- ========================= -->
+
+<div class="card-section mt-4">
+
+<h2>
+
+AI Security Recommendations
+
+</h2>
+
+{% if report.recommendations %}
+
+{% for item in report.recommendations %}
+
+<div class="recommendation-card">
+
+<div class="priority {{ item.priority|lower }}">
+
+{{ item.priority }}
+
+</div>
+
+<h4>
+
+{{ item.title }}
+
+</h4>
+
+<p>
+
+<strong>Reason:</strong>
+
+{{ item.reason }}
+
+</p>
+
+<p>
+
+<strong>Recommendation:</strong>
+
+{{ item.recommendation }}
+
+</p>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<p>
+
+No recommendations.
+
+</p>
+
+{% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+// Avoid redeclaring block-scoped variable if script is included multiple times
+if (typeof window.report === 'undefined') {
+  window.report = JSON.parse('{{ report|tojson|safe }}');
+}
+</script>
+
+<script src="{{ url_for('static', filename='js/attack_map.js') }}"></script>
+
+{% endblock %}

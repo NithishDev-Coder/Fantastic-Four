@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}ReconGuard — Target Acquisition{% endblock %}
+
+{% block content %}
+<section class="console">
+  <div class="console-copy">
+    <p class="eyebrow">Stage 00 · Target Acquisition</p>
+    <h1>Point it at a domain.<br>Get back what's exposed.</h1>
+    <p class="lede">
+      ReconGuard walks a target through subdomain discovery, a port sweep,
+      technology fingerprinting and exposed-panel checks, then ranks
+      everything it finds by risk — built for infrastructure you're
+      authorized to test.
+    </p>
+
+    <ol class="pipeline" aria-label="Recon pipeline stages">
+      <li><span class="stage-index">01</span><span>Scope check</span></li>
+      <li><span class="stage-index">02</span><span>Subdomain enum</span></li>
+      <li><span class="stage-index">03</span><span>Port + service scan</span></li>
+      <li><span class="stage-index">04</span><span>Tech fingerprint</span></li>
+      <li><span class="stage-index">05</span><span>Panel detection</span></li>
+      <li><span class="stage-index">06</span><span>Risk report</span></li>
+    </ol>
+  </div>
+
+  <form class="scan-console" method="post" action="{{ url_for('scan') }}" id="scan-form">
+    <label for="domain">Target domain</label>
+    <div class="input-shell">
+      <span class="input-caret" aria-hidden="true">&gt;</span>
+      <input
+        type="text" id="domain" name="domain"
+        placeholder="example.com"
+        value="{{ previous_domain or '' }}"
+        autocomplete="off" spellcheck="false" required
+      >
+    </div>
+
+    <label class="check-row">
+      <input type="checkbox" name="authorized" required>
+      <span>I own this domain, or have explicit authorization to test it.</span>
+    </label>
+
+    {% if error %}
+    <p class="console-error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <button type="submit" id="scan-button">
+      <span class="btn-label">Run recon</span>
+      <span class="btn-sub">~15–30s</span>
+    </button>
+  </form>
+</section>
+
+<section class="capability-strip">
+  <div class="cap-card">
+    <p class="cap-index">01</p>
+    <h3>Subdomain enumeration</h3>
+    <p>Certificate-transparency logs plus a throttled DNS brute force, deduplicated and resolved.</p>
+  </div>
+  <div class="cap-card">
+    <p class="cap-index">02</p>
+    <h3>Port &amp; service scan</h3>
+    <p>Checks the ports that actually matter — databases, remote access, dev servers — not all 65,535.</p>
+  </div>
+  <div class="cap-card">
+    <p class="cap-index">03</p>
+    <h3>Tech fingerprinting</h3>
+    <p>CMS, JS/CSS frameworks, server software, CDN, analytics, and security headers, read from headers and markup.</p>
+  </div>
+  <div class="cap-card">
+    <p class="cap-index">04</p>
+    <h3>Exposed panels</h3>
+    <p>Flags admin logins, database consoles, and leaked config files sitting on well-known paths.</p>
+  </div>
+</section>
+{% endblock %}
