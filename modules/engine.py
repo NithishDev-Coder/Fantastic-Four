@@ -6,6 +6,7 @@ to risk assessment and report assembly.
 
 import concurrent.futures
 import logging
+import config
 
 from modules import domain_info as domain_info_module
 from modules import panels as panels_module
@@ -16,6 +17,7 @@ from modules import scope as scope_module
 from modules import subdomains as subdomains_module
 from modules import techstack as techstack_module
 from modules import recommendations
+from config import MAX_THREADS
 
 logger = logging.getLogger("ReconGuard.Engine")
 
